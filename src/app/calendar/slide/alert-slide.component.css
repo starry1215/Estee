@@ -1,0 +1,28 @@
+.alert {
+    margin-bottom: 0.8rem;
+    border-radius: 0;
+    word-break: break-word;
+    background: #e1edf1;
+}
+
+.alert > .type {
+    background: #7fb7cd;
+    font-weight: bold;
+    padding: 0.5rem;
+    margin-bottom: 0;
+}
+
+.alert > .detail {
+    padding: 0.5rem;
+    background: #f7f7f7;
+    min-height: 60px;
+    box-shadow: 1px 1px 20px 0px #b7cbd5;
+}
+
+.alert.active {
+    background: #d8e4e7;
+}
+
+.alert.active > .detail {
+    box-shadow: 1px 1px 10px 0px #e7eff3;
+}

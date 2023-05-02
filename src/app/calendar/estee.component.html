@@ -1,0 +1,93 @@
+<div class="estee">
+    <div [class.d-none]="_playMode === _enumPlayMode.Calendar" class="advertisement">
+        <div class="vh-100 text-center">
+            <video #video id="video"></video>
+        </div>
+    </div>
+    <div [class.d-none]="_playMode === _enumPlayMode.Advertisement">
+        <div *ngIf="_errorMessage" class="error-block">
+            {{ _errorMessage }}
+        </div>
+        <div class="header">
+            <button type="button" class="btn btn-sm btn-outline-light btn-logout" (click)="logout()">logout</button>
+            <div class="d-flex align-items-center">
+                <div class="logo">
+                </div>
+                <div class="line">
+                </div>
+                <div class="datetime">
+                    <div class="time">
+                        {{ _date | pipeTime }}
+                    </div>
+                    <div class="date">
+                        {{ _date | pipeDate }}
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="container-fluid content">
+            <div class="row room-table-header">
+                <div class="col">
+                    會議室
+                </div>
+                <div class="col">
+                    時間
+                </div>
+                <div class="col">
+                    會議名稱
+                </div>
+            </div>
+            <div *ngFor="let room of _roomInfos" class="row room-table-content">
+                <div class="col name">
+                    {{ room.displayName }}
+                </div>
+                <div class="col">
+                    <div [ngSwitch]="room.roomStatus" class="time">
+                        <ng-container *ngSwitchCase="_enumRoomStatus.InUse">
+                            <div>
+                                {{ room.current?.startTime }}
+                            </div>
+                            <div>
+                                |
+                            </div>
+                            <div>
+                                {{ room.current?.endTime }}
+                            </div>
+                        </ng-container>
+                        <ng-container *ngSwitchCase="_enumRoomStatus.Incoming">
+                            <div>
+                                {{ room.next?.startTime }}
+                            </div>
+                            <div>
+                                |
+                            </div>
+                            <div>
+                                {{ room.next?.endTime }}
+                            </div>
+                        </ng-container>
+                        <ng-container *ngSwitchDefault></ng-container>
+                    </div>
+                </div>
+                <div class="col">
+                    <div class="subject" [ngClass]="'status-' + _enumRoomStatus[room.roomStatus]">
+                        <div [ngSwitch]="room.roomStatus">
+                            <ng-container *ngSwitchCase="_enumRoomStatus.InUse">
+                                {{ room.current?.subject }}
+                                <div *ngIf="room.current?.endInMinutes" class="subtitle mt-2">ends in <strong
+                                        class="highlight">{{ room.current?.endInMinutes }}</strong> minutes
+                                </div>
+                            </ng-container>
+                            <ng-container *ngSwitchCase="_enumRoomStatus.Incoming">
+                                <div>{{ room.next?.subject }}</div>
+                                <div class="subtitle mt-2">starts in <strong class="highlight">{{
+                                        room.next?.startInMinutes }}</strong> minutes
+                                </div>
+                            </ng-container>
+                            <ng-container *ngSwitchDefault>Available</ng-container>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

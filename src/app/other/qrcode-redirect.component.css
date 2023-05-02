@@ -1,0 +1,38 @@
+.qr-block {
+    height: 100vh;
+    padding: 2rem;
+    font-size: 1rem;
+    background-size: auto;
+    background-image: linear-gradient(180deg, #000000dd 15%, #0c0c0ccc 60%, #2c2c2c 75%, #101010dd 90%);
+    color: #fff;
+}
+
+.qr-block h2 {
+    text-align: center;
+}
+
+.qr-block .link-block {
+    background: #47bda1;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 2rem 0;
+    box-shadow: inset 1px 1px 20px #caf2f7;
+}
+
+.qr-block .link-block a {
+    color: #423b3b;
+    margin-top: 1rem;
+    display: block;
+}
+
+.qr-block fieldset {
+    border-radius: 0.5rem;
+    padding: 1rem;
+    border: 1px solid #fff;
+}
+
+.qr-block fieldset > legend {
+    width: auto;
+    float: none;
+    padding: 0 0.5rem;
+}

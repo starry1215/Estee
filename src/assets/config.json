@@ -1,0 +1,24 @@
+{
+    "rooms": [
+        {
+            "email": "TaipeiExperience@TestSeanCompany.onmicrosoft.com",
+            "displayName": "Taipei Experience Room"
+        },
+        {
+            "email": "TaichungExperience@TestSeanCompany.onmicrosoft.com",
+            "displayName": "Taichung Experience"
+        },
+        {
+            "email": "TainanExperience@TestSeanCompany.onmicrosoft.com",
+            "displayName": "Tainan Experience"
+        }
+    ],
+    "playlist": [
+        {
+            "name": "adv-1.mp4"
+        },
+        {
+            "name": "adv-2.mp4"
+        }
+    ]
+}

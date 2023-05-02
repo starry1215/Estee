@@ -1,0 +1,152 @@
+.btn-logout {
+    position: fixed;
+    right: 20px;
+    top: 20px;
+    font-size: 32px;
+    padding: 0.5rem 1rem;
+}
+
+.estee {
+    color: #fff;
+}
+
+.estee .error-block {
+    position: fixed;
+    bottom: 0;
+    z-index: 100;
+    width: 100vw;
+    height: 120px;
+    font-size: 64px;
+    background-color: #f00;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.estee .header {
+    height: 360px;
+    background-color: #002060;
+    padding: 1.2rem 2rem;
+}
+
+.estee .header .logo {
+    background-image: url("/assets/ELC_Logo-Stacked_White.png");
+    width: 480px;
+    height: 300px;
+}
+
+.estee .header .line {
+    width: 173px;
+    height: 0px;
+
+    border: 2px solid #FFFFFF;
+    transform: rotate(90deg);
+}
+
+.estee .header .datetime {
+    text-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+}
+
+.estee .header .datetime>.time {
+    font-size: 64px;
+    font-weight: 600;
+    letter-spacing: 5px;
+}
+
+.estee .header .datetime>.date {
+    font-size: 32px;
+    color: #F0E9E9;
+}
+
+.estee .content>.room-table-header {
+    height: 120px;
+    font-size: 54px;
+    letter-spacing: 0.2rem;
+    background-color: #cb8a50;
+    display: flex;
+    align-items: center;
+}
+
+.estee .content>.room-table-header .col {
+    text-align: center;
+}
+
+.estee .content>.room-table-content {
+    height: 480px;
+    background-color: #F3F3F1;
+    color: #000;
+}
+
+.estee .content>.room-table-content:nth-child(2n + 1) {
+    background-color: #E5EAEE;
+}
+
+.estee .content>.room-table-content .col {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+}
+
+.estee .content>.room-table-content .col:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    width: 320px;
+    height: 1px;
+    background-color: #000;
+    transform: rotate(90deg) translate(50%, -1rem);
+    transform-origin: 100% 0;
+}
+
+.estee .content>.room-table-content .name {
+    font-size: 44px;
+    font-weight: 400;
+}
+
+.estee .content>.room-table-content .time {
+    font-size: 52px;
+    font-weight: 400;
+}
+
+.estee .content>.room-table-content .subject {
+    font-size: 52px;
+    font-weight: 600;
+    color: #fff;
+    width: 346px;
+    height: 320px;
+    padding: 0.4rem;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.estee .content>.room-table-content .subtitle {
+    font-size: 36px;
+    font-weight: normal;
+}
+
+.estee .content>.room-table-content .subtitle>.highlight {
+    color: #CB8A50;
+    font-size: 44px;
+    font-weight: 600;
+}
+
+.estee .content>.room-table-content .subject.status-Available {
+    background-color: #4ea5b7;
+}
+
+.estee .content>.room-table-content .subject.status-InUse {
+    background-color: #D32060;
+}
+
+.estee .content>.room-table-content .subject.status-Incoming {
+    background-color: #E4E091;
+    color: #000;
+}
+
+.estee > .advertisement {
+    font-size: 64px;
+}

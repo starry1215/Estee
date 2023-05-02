@@ -1,0 +1,27 @@
+<div class="row">
+    <div class="col-12 qr-block">
+        <h2>{{ 'lang.word.createEvent' | translate }}</h2>
+        <div class="link-block">
+            <div>{{ 'lang.clause.openOutlook' | translate }}</div>
+            <a id="linkOutlookOffice365" [attr.href]="_outlookWebLink">
+                Outlook Office 365
+            </a>
+        </div>
+        <div class="link-block">
+            <div>{{ 'lang.clause.installOutlook' | translate }}</div>
+            <a id="linkAppStore" [attr.href]="ANDROID_STORE_LINK">
+                Android
+            </a>
+            <a [attr.href]="IOS_STORE_LINK">
+                IOS
+            </a>
+        </div>
+        <fieldset>
+            <legend>{{ 'lang.word.roomInfo' | translate }}</legend>
+            <div>
+                <label for="location" class="me-2">{{ 'lang.word.location' | translate }}</label>
+                <span id="location">{{ _location }}</span>
+            </div>
+        </fieldset>
+    </div>
+</div>

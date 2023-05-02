@@ -1,0 +1,128 @@
+<div class="offcanvas-header">
+    <h5 id="slideCenterLabel">
+        <fa-icon [icon]="ICON_SLIDER" class="me-2"></fa-icon>
+        {{ title | translate }}
+    </h5>
+</div>
+<div class="offcanvas-body">
+    <div class="mb-2 row align-items-center">
+        <label class="form-label col-5">{{ 'lang.word.globalConfig' | translate }}</label>
+        <label class="switch ms-2">
+            <input #globalSwitch id="config-global-switch" type="checkbox" [checked]="!_useLocalConfig" (change)="_useLocalConfig = !$event.target.checked">
+            <span for="config-global-switch" class="slider round"></span>
+        </label>
+    </div>
+    <div>
+        <div class="mb-2 row">
+            <label class="form-label col-5">{{ 'lang.word.lang' | translate }}</label>
+            <div class="col">
+                <select class="form-select form-select-sm" aria-label="Language options" [disabled]="globalSwitch.checked" (change)="_editLocalConfig.language = $event.target.value">
+                    <option *ngFor="let lang of LANGUAGE_LIST" [attr.value]="lang.key" [selected]="lang.key === _editLocalConfig.language">
+                        {{ lang.name }}
+                    </option>
+                </select>
+            </div>
+        </div>
+        <div class="mb-2">
+            <label class="form-label">{{ 'lang.word.lightbar' | translate }}</label>
+            <fieldset>
+                <legend>{{ 'lang.word.available' | translate }}</legend>
+                <div class="mb-2 d-flex align-items-center row">
+                    <label class="form-label col-6">{{ 'lang.word.mode' | translate }}</label>
+                    <div class="col">
+                        <label class="switch">
+                            <input #lightbarFreeSwitch id="config-lightbar-free-mode-switch" type="checkbox" [disabled]="globalSwitch.checked" [checked]="_editLocalConfig.lightbar.available.mode === 'on'" (change)="_editLocalConfig.lightbar.available.mode = $event.target.checked ? 'on' : 'off'">
+                            <span for="config-lightbar-free-mode-switch" class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-2 row">
+                    <label for="#config-lightbar-free-color" class="form-label col-6">{{ 'lang.word.color' | translate }}</label>
+                    <div class="col">
+                        <input id="config-lightbar-free-color" type="color" class="form-control" [disabled]="globalSwitch.checked || !lightbarFreeSwitch.checked" [(ngModel)]="_editLocalConfig.lightbar.available.color">
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>{{ 'lang.word.inuse' | translate }}</legend>
+                <div class="mb-2 d-flex align-items-center row">
+                    <label class="form-label col-6">{{ 'lang.word.mode' | translate }}</label>
+                    <div class="col">
+                        <label class="switch">
+                            <input #lightbarBusySwitch id="config-lightbar-busy-mode-switch" type="checkbox" [disabled]="globalSwitch.checked" [checked]="_editLocalConfig.lightbar.busy.mode === 'on'" (change)="_editLocalConfig.lightbar.busy.mode = $event.target.checked ? 'on' : 'off'">
+                            <span for="config-lightbar-busy-mode-switch" class="slider"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="mb-2 row">
+                    <label for="#config-lightbar-busy-color" class="form-label col-6">{{ 'lang.word.color' | translate }}</label>
+                    <div class="col">
+                        <input id="config-lightbar-busy-color" type="color" class="form-control" [disabled]="globalSwitch.checked || !lightbarBusySwitch.checked" [(ngModel)]="_editLocalConfig.lightbar.busy.color">
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+        <div class="mb-2">
+            <label class="form-label">{{ 'lang.word.color' | translate }}</label>
+            <fieldset>
+                <legend>{{ 'lang.word.theme' | translate }}</legend>
+                <div class="mb-2 row">
+                    <label for="#config-color-main-foreground" class="form-label col-6">{{ 'lang.word.foreground' | translate }}</label>
+                    <div class="col">
+                        <input id="config-color-main-foreground" type="color" class="form-control" [disabled]="globalSwitch.checked" [(ngModel)]="_editLocalConfig.theme.foreground">
+                    </div>
+                </div>
+                <div class="mb-2 row">
+                    <label for="#config-color-main-free" class="form-label col-6">{{ 'lang.word.available' | translate }}</label>
+                    <div class="col">
+                        <input id="config-color-main-free" type="color" class="form-control" [disabled]="globalSwitch.checked" [(ngModel)]="_editLocalConfig.theme.availableColor">
+                    </div>
+                </div>
+                <div class="mb-2 row">
+                    <label for="#config-color-main-busy" class="form-label col-6">{{ 'lang.word.inuse' | translate }}</label>
+                    <div class="col">
+                        <input id="config-color-main-busy" type="color" class="form-control" [disabled]="globalSwitch.checked" [(ngModel)]="_editLocalConfig.theme.occupiedColor">
+                    </div>
+                </div>
+            </fieldset>
+            <fieldset>
+                <legend>{{ 'lang.word.timeline' | translate }}</legend>
+                <div class="mb-2 row">
+                    <label for="#config-color-timeline-bg" class="form-label col-6">{{ 'lang.word.bg' | translate }}</label>
+                    <div class="col">
+                        <input id="config-color-timeline-bg" type="color" class="form-control" [disabled]="globalSwitch.checked" [(ngModel)]="_editLocalConfig.theme.timeline.bgColor">
+                    </div>
+                </div>
+                <div class="mb-2 row">
+                    <label for="#config-color-timeline-future" class="form-label col-6">{{ 'lang.word.futureEvent' | translate }}</label>
+                    <div class="col">
+                        <input id="config-color-timeline-future" type="color" class="form-control" [disabled]="globalSwitch.checked" [(ngModel)]="_editLocalConfig.theme.timeline.futureEventTimeBlockColor">
+                    </div>
+                </div>
+                <div class="mb-2 row">
+                    <label for="#config-color-timeline-current" class="form-label col-6">{{ 'lang.word.currentEvent' | translate }}</label>
+                    <div class="col">
+                        <input id="config-color-timeline-current" type="color" class="form-control" [disabled]="globalSwitch.checked" [(ngModel)]="_editLocalConfig.theme.timeline.currentEventTimeBlockColor">
+                    </div>
+                </div>
+                <div class="mb-2 row">
+                    <label for="#config-color-timeline-expired" class="form-label col-6">{{ 'lang.word.expireEvent' | translate }}</label>
+                    <div class="col">
+                        <input id="config-color-timeline-expired" type="color" class="form-control" [disabled]="globalSwitch.checked" [(ngModel)]="_editLocalConfig.theme.timeline.expiredEventTimeBlockColor">
+                    </div>
+                </div>
+            </fieldset>
+        </div>
+    </div>
+</div>
+<div class="offcanvas-footer">
+    <button type="button" class="btn btn-outline-secondary ms-auto" data-bs-dismiss="offcanvas">
+        {{ 'lang.word.cancel' | translate }}
+    </button>
+    <button type="button" class="btn btn-outline-secondary ms-2" (click)="reset()">
+        {{ 'lang.word.reset' | translate }}
+    </button>
+    <button type="button" class="btn btn-primary ms-2" data-bs-dismiss="offcanvas" (click)="confirm()">
+        {{ 'lang.word.confirm' | translate }}
+    </button>
+</div>

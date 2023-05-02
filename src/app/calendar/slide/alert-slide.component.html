@@ -1,0 +1,26 @@
+<div class="offcanvas-header">
+    <h5 id="slideCenterLabel">
+        <fa-icon [icon]="ICON_BELL" class="me-2"></fa-icon>
+        {{ title | translate }}
+    </h5>
+    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close" (click)="closeAlertView()"></button>
+</div>
+<div class="offcanvas-body">
+    <h5 *ngIf="_alertList.length === 0; else templateAlerts"
+        class="h-50 d-flex fw-bold align-items-center justify-content-center">No notifications</h5>
+    <ng-template #templateAlerts>
+        <div *ngFor="let alert of _alertList" class="alert" [class.active]="!alert.isView">
+            <div class="d-flex align-items-center">
+                {{ alert.date | date: 'yyyy-MM-dd'}} {{ alert.date | pipeTime }}
+                <fa-icon [icon]="ICON_TRASH" class="ms-auto" (click)="removeAlert(alert); $event.stopPropagation()">
+                </fa-icon>
+            </div>
+            <h6 class="type">
+                {{ alert.type | translate }}
+            </h6>
+            <div class="detail">
+                {{ alert.detail | translate: alert.detailParams }}
+            </div>
+        </div>
+    </ng-template>
+</div>
