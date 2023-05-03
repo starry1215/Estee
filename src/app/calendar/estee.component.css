@@ -147,6 +147,7 @@
     color: #000;
 }
 
-.estee > .advertisement {
-    font-size: 64px;
+.estee > .playlist .img {
+    width: 100vw;
+    height: 100vh;
 }

@@ -39,18 +39,10 @@ export class EsteeEntryComponent implements OnInit, OnDestroy {
     _playMode: PlayMode = PlayMode.Calendar;
     _enumPlayMode: typeof PlayMode = PlayMode;
     _loading: boolean = false;
-    _playlists: { name: string }[] = [];
+    _config: EsteeConfigInfo;
     _nextPlaylistIndex: number = 0;
     _isPlayingMedia: boolean = false;
-
-    private _videoRef: ElementRef;
-    @ViewChild("video", { static: false })
-    set video(v: ElementRef) {
-        this._videoRef = v;
-        this._videoRef.nativeElement.addEventListener('ended', (event) => {
-            this._isPlayingMedia = false;
-        });
-    }
+    _img64Data: string;
 
     constructor(
         private authSvc: AuthService,
@@ -105,7 +97,7 @@ export class EsteeEntryComponent implements OnInit, OnDestroy {
                 throw 'No config or wrong config format';
             }
 
-            this._playlists = res.config.playlist;
+            this._config = res.config;
             res.config.rooms.forEach((room: { email: string, displayName: string}) => {
                 this._roomInfos.push({
                     id: 'room-' + room.email,
@@ -208,18 +200,13 @@ export class EsteeEntryComponent implements OnInit, OnDestroy {
         }
 
         console.log('--- available counter: ', availableCounter);
-        this._playMode = availableCounter === this._roomInfos.length ? PlayMode.Advertisement : PlayMode.Calendar;
-        if (this._playMode == PlayMode.Advertisement) {
+        this._playMode = availableCounter === this._roomInfos.length ? PlayMode.Playlist : PlayMode.Calendar;
+        if (this._playMode == PlayMode.Playlist) {
             if (!this._isPlayingMedia) {
                 this.playNextMedia();
             }
         }
         else {
-            console.log('--- ', this._videoRef);
-            if (this._isPlayingMedia) {
-                this._videoRef?.nativeElement.pause();
-            }
-            
             this._isPlayingMedia = false;
         }
         console.log('--- playmode: ', this._playMode);
@@ -230,23 +217,31 @@ export class EsteeEntryComponent implements OnInit, OnDestroy {
     }
 
     async playNextMedia(): Promise<void> {
-        if (this._playlists.length === 0) {
+        if (this._config.playlist.contents.length === 0) {
             return;
         }
 
-        if (this._playlists.length <= this._nextPlaylistIndex) {
-            this._nextPlaylistIndex = this._nextPlaylistIndex % this._playlists.length;
+        if (this._nextPlaylistIndex >= this._config.playlist.contents.length) {
+            this._nextPlaylistIndex = 0;
         }
-        const mediaRes: { isFault: boolean, b64Data?: string, mediaData?: Blob, mime?: string, errorType?: ErrorType, errorMsg?: string, errorMsgParams?: any[] } = await this.cacheSvc.loadMediaStream(this._playlists[this._nextPlaylistIndex].name, 50);
+
+        const mediaSetting: {
+            name: string,
+            duration?: number
+        } = this._config.playlist.contents[this._nextPlaylistIndex];
+
+        if (!mediaSetting.duration) {
+            mediaSetting.duration = this._config.playlist.duration;
+        }
+
+        const mediaRes: { isFault: boolean, b64Data?: string, mediaData?: Blob, mime?: string, errorType?: ErrorType, errorMsg?: string, errorMsgParams?: any[] } = await this.cacheSvc.loadMediaStream(this._config.playlist.folder + '/' + mediaSetting.name, 50);
+        console.log('--- media: ', mediaRes);
         if (mediaRes.isFault) {
             return;
         }
 
         try {
-            this._videoRef.nativeElement.muted = true;
-            this._videoRef.nativeElement.src = URL.createObjectURL(mediaRes.mediaData);
-            this._videoRef.nativeElement.load();
-            this._videoRef.nativeElement.play();
+            this._img64Data = mediaRes.b64Data;
             this._isPlayingMedia = true;
             this._nextPlaylistIndex++;
         }

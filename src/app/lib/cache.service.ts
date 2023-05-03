@@ -178,7 +178,6 @@ export class CacheService {
 
             this._bg64Data = null;
             this._logo64Data = null;
-            //            this.resetConfig();
         }
     }
 
@@ -202,14 +201,13 @@ export class CacheService {
 
                     if (!res.isFault) {
                         this._hasWebConfig = true;
-                        this._config = res.data;
+                        this._config = new EsteeConfigInfo(res.data);
                         this.updateCache(this.CACHE_APP_CONFIG, JSON.stringify(res.data));
                     }
                     else {
                         this._hasWebConfig = false;
                     }
 
-                    //                  this.resetConfig();
                     this.initDateTimeFormatter();
 
                     this._loadingConfig = false;
@@ -293,6 +291,7 @@ export class CacheService {
                 mime: mime
             };
             switch (mime) {
+                case 'jpeg':
                 case 'jpg':
                 case 'png':
                     {

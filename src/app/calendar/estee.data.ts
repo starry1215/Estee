@@ -2,7 +2,7 @@ import { IAEventInfo } from "./calendar.data"
 
 export enum PlayMode {
     Calendar = 'Calendar',
-    Advertisement = 'Advertisement'
+    Playlist = 'Playlist'
 }
 
 export enum RoomStatus {
@@ -23,6 +23,34 @@ export class RoomEventInfo {
 }
 
 export class EsteeConfigInfo {
+    roomIdleDuration: number;
     rooms: { email: string, displayName: string }[];
-    playlist: { name: string }[];
+    playlist: { 
+        duration: number,
+        folder: string,
+        contents:  {
+            name: string,
+            duration?: number
+        }[]
+    };
+
+    constructor(raw?: any) {
+        console.log('--- raw config: ', raw);
+        this.roomIdleDuration = raw?.roomIdleDuration || 300;
+        this.rooms = raw?.rooms || [];
+        if (raw?.playlist) {
+            this.playlist = {
+                duration: raw?.playlist.duration || 5,
+                folder: raw?.playlist.folder || 'playlist',
+                contents: raw?.playlist.contents || []
+            };
+        }
+        else {
+            this.playlist = {
+                duration: 5,
+                folder: 'playlist',
+                contents: []
+            };
+        }
+    }
 }
