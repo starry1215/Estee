@@ -7,7 +7,6 @@ import { endOfDay, startOfDay } from 'date-fns/esm';
 import { IGraphMultiItem } from './msGraph.data';
 import { IAEventInfo } from '../calendar/calendar.data';
 import { HttpClient } from '@angular/common/http';
-import { IAConfig } from '../app-config.model';
 
 import { environment } from '../../environments/environment';
 import { EsteeConfigInfo } from '../calendar/estee.data';
@@ -34,43 +33,12 @@ export class MSGraphService {
 
         const user: MicrosoftGraph.User = await this.authSvc.graphClient
             .api('/users/' + this.msalSvc.instance.getActiveAccount().username!)
-            //.select('displayName,mail,mailboxSettings,userPrincipalName,userType')
             .get();
 
         console.log('[graphSvc][user] user = ', user);
     }
 
-    /*     
-    async subscribeCalendarNotification(): Promise<{ isFault: boolean, errorMessage?: string }> {
-        if (!this.authSvc.graphClient) {
-            return { isFault: true, errorMessage: 'No graph client' };
-        }
-
-        try {
-            const d: Date = new Date();
-            d.setDate(d.getDate() + 3);
-            const data = {
-                changeType: "created,updated,deleted",
-                notificationUrl: OAuthSettings.redirectUri,
-                resource: 'me/mailFolders(\'Inbox\')/messages', //"/users/" + this.msalSvc.instance.getActiveAccount().username! + "/events",
-                expirationDateTime: zonedTimeToUtc(startOfDay(d), 'UTC'),
-                latestSupportedTlsVersion: 'v1_2'
-            };
-
-            const ret: any = await this.authSvc.graphClient
-                .api('/subscriptions')
-                .post(data);
-
-            return { isFault: false };
-        }
-        catch (error) {
-            return { isFault: true, errorMessage: error.toString() };
-        }
-    } 
-    */
-
     async getCalendarByDate(d: Date, account?: string): Promise<{ isFault: boolean, data?: IAEventInfo[], errorMessage?: string }> {
-        console.log('--- get calendar for account: ', account);
         if (!this.authSvc.graphClient) {
             return { isFault: true, errorMessage: 'No graph client' };
         }
@@ -92,150 +60,6 @@ export class MSGraphService {
                 .get();
 
             return { isFault: false, data: ret.value.map((ev: MicrosoftGraph.Event) => new IAEventInfo(ev)) };
-        }
-        catch (error) {
-            return { isFault: true, errorMessage: error.toString() };
-        }
-    }
-
-    async getMail(event: IAEventInfo): Promise<{ isFault: boolean, data?: any, errorMessage?: string }> {
-        if (!this.authSvc.graphClient) {
-            return { isFault: true, errorMessage: 'No graph client' };
-        }
-
-        try {
-            const ret: IGraphMultiItem<MicrosoftGraph.Event> = await this.authSvc.graphClient
-                .api('/users/' + this.msalSvc.instance.getActiveAccount().username! + '/messages') // + "?$expand=microsoft.graph.eventMessage/event($filter=id eq \'" + event.id + "\')")
-                .expand(`microsoft.graph.eventMessage/event($select=id,subject;$filter=id eq '${event.id}')`)
-                //.filter(`id eq '${event.id}'`)
-                .select('microsoft.graph.eventMessage/event')
-                .top(10)
-                .get();
-
-            return { isFault: false };
-        }
-        catch (error) {
-            return { isFault: true, errorMessage: error.toString() };
-        }
-    }
-
-    async extendEvent(event: IAEventInfo, durationInMinute: number): Promise<{ isFault: boolean, errorMessage?: string }> {
-        if (!this.authSvc.graphClient) {
-            return { isFault: true, errorMessage: 'No graph client' };
-        }
-
-        console.log('[graphSvc] extend event with ', arguments);
-
-        const endDateTime = new Date(event.endDate);
-        endDateTime.setMinutes(endDateTime.getMinutes() + durationInMinute);
-        console.log('[graphSvc] extend with end time = ', endDateTime);
-
-        try {
-            const ret: MicrosoftGraph.Event = await this.authSvc.graphClient
-                .api('/users/' + this.msalSvc.instance.getActiveAccount().username! + '/events/' + event.id)
-                .patch({ end: { dateTime: endDateTime.toISOString().replace('Z', ''), timeZone: 'UTC' } });
-
-            return { isFault: false };
-        }
-        catch (error) {
-            return { isFault: true, errorMessage: error.toString() };
-        }
-    }
-
-    async addEvent(subject: string, startDate: Date, endDate: Date, isAllDay: boolean = false): Promise<{ isFault: boolean, errorMessage?: string }> {
-        if (!this.authSvc.graphClient) {
-            return { isFault: true, errorMessage: 'No graph client' };
-        }
-
-        console.log('[graphSvc] create adhoc event between ', startDate, endDate);
-
-        try {
-            const ret: MicrosoftGraph.Event = await this.authSvc.graphClient
-                .api('/users/' + this.msalSvc.instance.getActiveAccount().username! + '/calendar/events')
-                .post({
-                    subject: subject,
-                    start: { dateTime: isAllDay ? startDate.toISOString().replace(/T.*Z$/, '') : startDate.toISOString().replace('Z', ''), timeZone: 'UTC' },
-                    end: { dateTime: isAllDay ? endDate.toISOString().replace(/T.*Z$/, '') : endDate.toISOString().replace('Z', ''), timeZone: 'UTC' },
-                    isAllDay: isAllDay
-                });
-
-            return { isFault: false };
-        }
-        catch (error) {
-            return { isFault: true, errorMessage: error.toString() };
-        }
-    }
-
-    async stopEvent(event: IAEventInfo, stopDateTime: Date): Promise<{ isFault: boolean, data?: Date, errorMessage?: string }> {
-        if (!this.authSvc.graphClient) {
-            return { isFault: true, errorMessage: 'No graph client' };
-        }
-
-        console.log('[graphSvc] stop event with', arguments);
-
-        const endDateTime: Date = stopDateTime;
-        endDateTime.setSeconds(0, 0);
-        //if (endDateTime.getSeconds() > 0) {
-        //    endDateTime.setMinutes(endDateTime.getMinutes() - 1);
-        //}
-
-        console.log('[graphSvc] stop with end time = ', endDateTime);
-
-        try {
-            const ret: MicrosoftGraph.Event = await this.authSvc.graphClient
-                .api('/users/' + this.msalSvc.instance.getActiveAccount().username! + '/events/' + event.id)
-                .patch({ end: { dateTime: endDateTime.toISOString().replace('Z', ''), timeZone: 'UTC' } });
-
-            return { isFault: false, data: endDateTime };
-        }
-        catch (error) {
-            return { isFault: true, errorMessage: error.toString() };
-        }
-    }
-
-    async cancelEvent(eventId: string, comment?: string): Promise<{ isFault: boolean, errorMessage?: string }> {
-        if (!this.authSvc.graphClient) {
-            return { isFault: true, errorMessage: 'No graph client' };
-        }
-
-        console.log('[graphSvc] cancel event with', arguments);
-
-        try {
-            //how to get the status === 202 ?
-            const ret: MicrosoftGraph.Event = await this.authSvc.graphClient
-                .api('/users/' + this.msalSvc.instance.getActiveAccount().username! + '/events/' + eventId + '/cancel')
-                .header('observe', 'response')
-                .header('reponseType', 'raw') //?
-                .post({ comment: comment })
-
-            return { isFault: false };
-        }
-        catch (error) {
-            return { isFault: true, errorMessage: error.toString() };
-        }
-
-        /*         
-        return this.http.post<void>(this.GRAPH_USER_ENDPOINT + this._account.username + '/events/' + eventID + '/cancel', { comment: comment }, { observe: 'response' }).pipe(
-                    map((res: HttpResponse<void>) => {
-                        return res.status === 202 ? true : false;
-                    })
-                ) 
-        */
-    }
-
-    async declineEvent(eventId: string): Promise<{ isFault: boolean, errorMessage?: string }> {
-        if (!this.authSvc.graphClient) {
-            return { isFault: true, errorMessage: 'No graph client' };
-        }
-
-        console.log('[graphSvc] decline event with', arguments);
-
-        try {
-            const ret: MicrosoftGraph.Event = await this.authSvc.graphClient
-                .api('/users/' + this.msalSvc.instance.getActiveAccount().username! + '/events/' + eventId + '/decline')
-                .post({});
-
-            return { isFault: false };
         }
         catch (error) {
             return { isFault: true, errorMessage: error.toString() };
@@ -324,18 +148,4 @@ export class MSGraphService {
             return { isFault: true, errorMessage: error.toString() };
         }
     }
-
-    /*     getSupportedTimezone(): Observable<{ alias: string, displayName: string }[]> {
-            return this.http.get(this.GRAPH_ME_ENDPOINT + 'outlook/supportedTimeZones').pipe(
-                map((res: {
-                    "@odata.context": string,
-                    value: {
-                        alias: string,
-                        displayName: string
-                    }[]
-                }) => {
-                    return res.value;
-                })
-            );
-        } */
 }

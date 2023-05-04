@@ -1,10 +1,11 @@
 <div class="estee">
-    <div [class.d-none]="_playMode === _enumPlayMode.Calendar" class="playlist">
+    <div [class.d-none]="_currentPlayMode === _enumPlayMode.Calendar" class="playlist">
+        <div *ngIf="_config?.playlist?.contents.length === 0">No playlist</div>
         <div class="img"
             [ngStyle]="_img64Data ? { 'background-image': 'url(' + _img64Data + ')', 'background-size': 'cover'} : ''">
         </div>
     </div>
-    <div [class.d-none]="_playMode === _enumPlayMode.Playlist">
+    <div [class.d-none]="_currentPlayMode === _enumPlayMode.Playlist">
         <div *ngIf="_errorMessage" class="error-block">
             {{ _errorMessage }}
         </div>

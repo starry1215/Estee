@@ -5,19 +5,11 @@ import { BrowserModule } from '@angular/platform-browser';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { CustomPipeModule } from '../pipe/custom-pipe.module';
 import { TranslateModule } from '@ngx-translate/core';
-import { SlideFuncService } from './slide/slide-func.service';
-import { AlertSlideComponent } from './slide/alert-slide.component';
-import { SlideFuncDirective } from './slide/slide-func.directive';
-import { LocalConfigSlideComponent } from './slide/local-config-slide.component';
 import { EsteeEntryComponent } from './estee.component';
 
 @NgModule({
   declarations: [
-    AlertSlideComponent,
-    LocalConfigSlideComponent,
-    EsteeEntryComponent,
-
-    SlideFuncDirective
+    EsteeEntryComponent
   ],
   imports: [
     BrowserModule,
@@ -29,8 +21,7 @@ import { EsteeEntryComponent } from './estee.component';
     })
   ],
   providers: [
-    DatePipe,
-    SlideFuncService
+    DatePipe
   ],
   exports: [
     EsteeEntryComponent

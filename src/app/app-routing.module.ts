@@ -1,9 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { AuthGuard } from './auth-guard.service';
 import { LoginComponent } from './other/login.component';
-import { UnSupportComponent } from './other/unsupport.component';
-import { QRCodeRedirectComponent } from './other/qrcode-redirect.component';
 import { EsteeEntryComponent } from './calendar/estee.component';
 
 //The order of the routes matters.
@@ -13,7 +10,6 @@ import { EsteeEntryComponent } from './calendar/estee.component';
 const routes: Routes = [
     {
         path: 'calendar',
-        canActivate: [AuthGuard],
         component: EsteeEntryComponent,
         pathMatch: 'full'
     },
@@ -22,23 +18,10 @@ const routes: Routes = [
         component: LoginComponent
     },
     {
-        path: 'outlook-redirect',
-        component: QRCodeRedirectComponent
-    },
-    {
-        path: 'unsupport',
-        component: UnSupportComponent
-    },
-    {
         path: 'estee',
-        canActivate: [AuthGuard],
         component: EsteeEntryComponent,
         pathMatch: 'full'
     }
-/*     {
-        path: "**",
-        component: UnSupportComponent
-    } */
 ];
 
 @NgModule({

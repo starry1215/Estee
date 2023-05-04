@@ -1,9 +1,7 @@
 
 import { Injectable } from '@angular/core';
 import { from, lastValueFrom, Observable, of } from 'rxjs';
-import { concatMap, map } from 'rxjs/operators';
-import { IAConfig, IALocalConfig } from '../app-config.model';
-import { AppConfigService } from '../app-config.service';
+import { map } from 'rxjs/operators';
 import { ErrorType } from '../calendar/calendar.data';
 import { Helper } from './helper';
 import { MSGraphService } from './msGraph.service';
@@ -29,17 +27,6 @@ export class CacheService {
     private _forceUpdateMinute: number;
 
     private _loadingConfig: boolean = false;
-    private _loadingLogo: boolean = false;
-    private _loadingBg: boolean = false;
-
-    private _localConfig: IALocalConfig;
-    get localConfig(): IALocalConfig {
-        return this._localConfig;
-    }
-    private _useLocalConfig: boolean = false;
-    get useLocalConfig(): boolean {
-        return this._useLocalConfig;
-    }
 
     private _dateFormatter: Intl.DateTimeFormat;
     get dateFormatter(): Intl.DateTimeFormat {
@@ -51,24 +38,7 @@ export class CacheService {
     }
 
     constructor(private graphSvc: MSGraphService) {
-        /*
-        try {
-            this.resetConfig();
-
-            this._lastAccount = localStorage.getItem(this.CACHE_LAST_ACCOUNT);
-            this._bg64Data = localStorage.getItem(this.CACHE_BG_NAME);
-            this._logo64Data = localStorage.getItem(this.CACHE_LOGO_NAME);
-        }
-        catch (error) {
-            console.error('[cache] parse error = ', error);
-        }
-
-        this._lastLaunchTime = new Date().getTime();
-        this._forceUpdateMinute = Helper.roundToFix(Math.random() * 30, 0);
-        this.updateCache(this.CACHE_LAST_LAUNCHTIME, this._lastLaunchTime);
-        */
         this.initDateTimeFormatter();
-
     }
 
     doForceUpdate(d: Date): void {
@@ -79,91 +49,6 @@ export class CacheService {
                 document.location.reload();
             }
         }
-    }
-    /*
-        getBg(refresh: boolean = false): Observable<{ isFault: boolean, data?: string, errorType?: ErrorType, errorMsg?: string, errorMsgParams?: any[] }> {
-            console.log('[cache] get bg', refresh);
-    
-            if (refresh) {
-                if (this._loadingBg) {
-                    return Helper.waitUntil(() => !this._loadingBg).pipe(
-                        map(() => {
-                            return { isFault: !this._bg64Data, data: this._bg64Data };
-                        })
-                    );
-                }
-    
-                this._loadingBg = true;
-                return this.getConfig().pipe(
-                    concatMap((res: { config: IAConfig, errorMsg?: string }) => {
-                        return from(this.loadImageStream(res.config.background, this._config.resource.bg.sizeLimit, this._config.resource.bg.supportMimeTypes));
-                    }),
-                    map((res: { isFault: boolean, b64Data?: string, errorType?: ErrorType, errorMsg?: string, errorMsgParams?: any[] }) => {
-                        console.log('[cache] get bg res = ', res);
-                        if (!res.isFault && res.b64Data) {
-                            this._bg64Data = res.b64Data;
-                            this.updateCache(this.CACHE_BG_NAME, this._bg64Data);
-                        }
-    
-                        this._loadingBg = false;
-    
-                        if (res.errorType === ErrorType.Size) {
-                            return { isFault: res.isFault, data: this._bg64Data, errorType: res.errorType, errorMsg: 'lang.clause.bgSizeExceed', errorMsgParams: [this._config.resource.bg.sizeLimit] };
-                        }
-    
-                        return { isFault: res.isFault, data: this._bg64Data, errorType: res.errorType, errorMsg: res.errorMsg, errorMsgParams: res.errorMsgParams };
-                    })
-                );
-            }
-    
-            return of({ isFault: false, data: this._bg64Data });
-        }
-    
-        getLogo(refresh: boolean = false): Observable<{ isFault: boolean, data?: string, errorType?: ErrorType, errorMsg?: string, errorMsgParams?: any[] }> {
-            console.log('[cache] get logo', refresh);
-    
-            if (refresh) {
-                if (this._loadingLogo) {
-                    return Helper.waitUntil(() => !this._loadingLogo).pipe(
-                        map(() => {
-                            return { isFault: !this._bg64Data, data: this._logo64Data };
-                        })
-                    );
-                }
-    
-                this._loadingLogo = true;
-                return this.getConfig().pipe(
-                    concatMap((res: { config: IAConfig, errorMsg?: string }) => {
-                        return from(this.loadImageStream(res.config.logo, this._config.resource.logo.sizeLimit, this._config.resource.logo.supportMimeTypes));
-                    }),
-                    map((res: { isFault: boolean, b64Data?: string, errorType?: ErrorType, errorMsg?: string, errorMsgParams?: any[] }) => {
-                        console.log('[cache] get logo res = ', res);
-                        if (!res.isFault && res.b64Data) {
-                            this._logo64Data = res.b64Data;
-                            this.updateCache(this.CACHE_LOGO_NAME, this._logo64Data);
-                        }
-    
-                        this._loadingLogo = false;
-    
-                        if (res.errorType === ErrorType.Size) {
-                            return { isFault: res.isFault, data: this._bg64Data, errorType: res.errorType, errorMsg: 'lang.clause.logoSizeExceed', errorMsgParams: [this._config.resource.bg.sizeLimit] };
-                        }
-    
-                        return { isFault: res.isFault, data: this._logo64Data, errorType: res.errorType, errorMsg: res.errorMsg, errorMsgParams: res.errorMsgParams };
-                    })
-                );
-            }
-    
-            return of({ isFault: false, data: this._logo64Data });
-        }
-        */
-
-    saveLocalConfig(config: IAConfig, useLocalConfig: boolean): void {
-        this.updateCache(this.CACHE_LOCAL_CONFIG, JSON.stringify(config));
-        this.updateCache(this.CACHE_CONFIG_USE_LOCAL, useLocalConfig);
-
-        //this.resetConfig();
-        this.initDateTimeFormatter();
     }
 
     saveLoginAccount(account?: string): void {
@@ -268,7 +153,6 @@ export class CacheService {
         }
 
         const resRet: { isFault: boolean, data?: { content: Blob, mimeType?: string }, errorMessage?: string } = await this.graphSvc.getStreamFile(relPath);
-        console.log('---- resource res: ', resRet);
         if (resRet.isFault) {
             return { isFault: true, errorType: ErrorType.API, errorMsg: 'lang.clause.apiError', errorMsgParams: ['(' + relPath + ') ' + resRet.errorMessage] };
         }
@@ -284,7 +168,6 @@ export class CacheService {
                 return { isFault: true, errorType: ErrorType.Format, errorMsg: 'lang.clause.imgFormatError', errorMsgParams: [relPath] };
             }
         }
-        console.log('---mime: ', mime);
         try {
             let data: { isFault: boolean, mime?: string, b64Data?: string, mediaData?: Blob, errorType?: ErrorType, errorMsg?: string, errorMsgParams?: any[] } = { 
                 isFault: false,

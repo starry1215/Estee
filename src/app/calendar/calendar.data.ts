@@ -1,5 +1,4 @@
 import * as MicrosoftGraph from '@microsoft/microsoft-graph-types';
-import { CalendarHelper } from './calendar.helper';
 
 export const BOOK_RECOMMAND_DURATIONS: number[] = [15, 30, 45, 60, 90, 105, 120];
 

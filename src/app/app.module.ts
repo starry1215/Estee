@@ -12,16 +12,11 @@ import { MSGraphService } from './lib/msGraph.service';
 import { AuthService } from './lib/auth.service';
 import { CustomPipeModule } from './pipe/custom-pipe.module';
 import { CacheService } from './lib/cache.service';
-import { AppConfigService } from './app-config.service';
 import { environment } from '../environments/environment';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { TranslateLoader, TranslateModule } from '@ngx-translate/core';
 import { TranslateHttpLoader } from '@ngx-translate/http-loader';
-import { IAdeaService } from './lib/iadea.service';
-import { QRCodeRedirectComponent } from './other/qrcode-redirect.component';
 import { AppRoutingModule } from './app-routing.module';
-import { AuthGuard } from './auth-guard.service';
-import { UnSupportComponent } from './other/unsupport.component';
 import { LoginComponent } from './other/login.component';
 import { RouterModule } from '@angular/router';
 
@@ -79,8 +74,6 @@ export function HttpLoaderFactory(http: HttpClient) {
 @NgModule({
   declarations: [
     AppComponent,
-    QRCodeRedirectComponent,
-    UnSupportComponent,
     LoginComponent
   ],
   imports: [
@@ -103,21 +96,12 @@ export function HttpLoaderFactory(http: HttpClient) {
     AppRoutingModule
   ],
   providers: [
-    AuthGuard,
     MSGraphService,
     AuthService,
-    IAdeaService,
     CacheService,
     {
       provide: HTTP_INTERCEPTORS,
       useClass: MsalInterceptor,
-      multi: true
-    },
-    AppConfigService,
-    {
-      provide: APP_INITIALIZER,
-      useFactory: (appConfigSvc: AppConfigService) => function () { return appConfigSvc.load(); },
-      deps: [AppConfigService],
       multi: true
     },
     /*

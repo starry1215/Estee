@@ -1,13 +1,11 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { concat, fromEvent, merge, Subject, timer } from "rxjs";
 import { debounceTime, takeUntil } from "rxjs/operators";
-import { ErrorType } from "../calendar/calendar.data";
 import { AuthService } from "../lib/auth.service";
 import { CacheService } from "../lib/cache.service";
 
 @Component({
-    templateUrl: './login.component.html',
-    styleUrls: ['./login.component.css']
+    templateUrl: './login.component.html'
 })
 export class LoginComponent implements OnInit, OnDestroy {
     _logo64Data: string;

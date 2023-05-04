@@ -35,7 +35,6 @@ export class EsteeConfigInfo {
     };
 
     constructor(raw?: any) {
-        console.log('--- raw config: ', raw);
         this.roomIdleDuration = raw?.roomIdleDuration || 300;
         this.rooms = raw?.rooms || [];
         if (raw?.playlist) {

@@ -1,7 +1,7 @@
-import { Component, ElementRef, OnDestroy, OnInit, ViewChild } from "@angular/core";
+import { Component, OnDestroy, OnInit } from "@angular/core";
 import { AccountInfo } from "@azure/msal-browser";
 import { Subject, of, timer } from "rxjs";
-import { catchError, concatMap, map, takeUntil } from "rxjs/operators";
+import { takeUntil } from "rxjs/operators";
 import { AuthService } from "../lib/auth.service";
 import { MSGraphService } from '../lib/msGraph.service';
 import { ErrorType, IAEventInfo } from "./calendar.data";
@@ -36,13 +36,14 @@ export class EsteeEntryComponent implements OnInit, OnDestroy {
     _errorMessage: string;
     _enumRoomStatus: typeof RoomStatus = RoomStatus;
     _date: Date;
-    _playMode: PlayMode = PlayMode.Calendar;
+    _currentPlayMode: PlayMode = PlayMode.Calendar;
+    _nextPlayMode: PlayMode = PlayMode.Calendar;
     _enumPlayMode: typeof PlayMode = PlayMode;
     _loading: boolean = false;
     _config: EsteeConfigInfo;
     _nextPlaylistIndex: number = 0;
-    _isPlayingMedia: boolean = false;
     _img64Data: string;
+    _timeoutHwnd: any;
 
     constructor(
         private authSvc: AuthService,
@@ -70,10 +71,9 @@ export class EsteeEntryComponent implements OnInit, OnDestroy {
             }
             else if (!isOnlinePrev && isOnlineCurrent) {
                 this._errorMessage = '';
-                console.log('--- query calendar due to network change');
                 const isCalendarChanged: boolean = await this.getCalendar();
                 if (isCalendarChanged) {
-                    this.updateStatusEveryZeroSecond();
+                    this.updateStatusEveryZeroSecond('online status changed');
                 }
             }
 
@@ -81,24 +81,24 @@ export class EsteeEntryComponent implements OnInit, OnDestroy {
             if (this._nextCalendarQueryCounter-- === 0) {
                 const isCalendarChanged: boolean = await this.getCalendar();
                 if (isCalendarChanged) {
-                    this.updateStatusEveryZeroSecond('countdown is 0');
+                    this.updateStatusEveryZeroSecond('calendar changed');
                 }
             }
 
             if (this._date.getSeconds() === 0) {
-                this.updateStatusEveryZeroSecond();
+                this.updateStatusEveryZeroSecond('zero second');
             }
         });
 
         // load config
         this.cacheSvc.getConfig(true).subscribe((res: { config: EsteeConfigInfo, errorMsg?: string }) => {
-            console.log('---- config res: ', res);
+            console.log('[cal] config = ', res);
             if (!res.config || !res.config.playlist) {
                 throw 'No config or wrong config format';
             }
 
             this._config = res.config;
-            res.config.rooms.forEach((room: { email: string, displayName: string}) => {
+            res.config.rooms.forEach((room: { email: string, displayName: string }) => {
                 this._roomInfos.push({
                     id: 'room-' + room.email,
                     email: room.email,
@@ -117,7 +117,6 @@ export class EsteeEntryComponent implements OnInit, OnDestroy {
 
     private updateNextCalendarQueryCounter(reason?: string): void {
         this._nextCalendarQueryCounter = Math.floor((1 + Math.random()) * this.CALENDAR_UPDATE_SEED);
-        console.log('--- next counter by : ', reason, this._nextCalendarQueryCounter);
     }
 
     private async getCalendar(): Promise<boolean> {
@@ -128,34 +127,37 @@ export class EsteeEntryComponent implements OnInit, OnDestroy {
             }
 
             for (let room of this._roomInfos) {
+                let isRoomCalendarChanged: boolean = false;
                 const ret: { isFault: boolean, data?: IAEventInfo[], errorMessage?: string } = await this.graphSvc.getCalendarByDate(this._date, room.email);
                 if (!ret.isFault) {
-                    isCalendarChanged ||= !room.calendarMap || ret.data?.length !== Object.keys(room.calendarMap).length;
-                    if (!isCalendarChanged) {
+                    isRoomCalendarChanged = !room.calendarMap || ret.data?.length !== Object.keys(room.calendarMap).length;
+                    if (!isRoomCalendarChanged) {
                         for (let ev of ret.data) {
                             if (!room.calendarMap[ev.id] || room.calendarMap[ev.id].etag !== ev.etag) {
-                                isCalendarChanged = true;
+                                isRoomCalendarChanged = true;
                                 break;
                             }
                         }
                     }
                     // calendar is change
-                    if (isCalendarChanged) {
+                    if (isRoomCalendarChanged) {
                         room.calendarMap = ret.data.reduce((acc, cur) => {
                             acc[cur.id] = cur;
                             return acc;
                         }, {});
 
                         room.calendars = ret.data;
-                        console.log('[cal] calendar is changed', room.calendars);
+                        console.log(`[cal] calendar is changed for room ${room.displayName}`, room.calendars);
                     }
+
+                    isCalendarChanged ||= isRoomCalendarChanged;
                 }
             }
 
             return isCalendarChanged;
         }
         catch (ex) {
-            console.error('--- exception: ', ex);
+            console.error('[cal] get calendar exception = ', ex);
         }
         finally {
             this.updateNextCalendarQueryCounter('calendar finish');
@@ -163,7 +165,7 @@ export class EsteeEntryComponent implements OnInit, OnDestroy {
     }
 
     private updateStatusEveryZeroSecond(reason: string = '0s'): void {
-        console.log('[cal] update status by', reason);
+        console.log(`[cal] update status by ${reason}`);
 
         let availableCounter: number = 0;
         for (let room of this._roomInfos) {
@@ -196,20 +198,30 @@ export class EsteeEntryComponent implements OnInit, OnDestroy {
                 availableCounter++;
             }
 
-            console.log('---room: ', room);
+            console.log('[cal] room = ', room);
         }
 
-        console.log('--- available counter: ', availableCounter);
-        this._playMode = availableCounter === this._roomInfos.length ? PlayMode.Playlist : PlayMode.Calendar;
-        if (this._playMode == PlayMode.Playlist) {
-            if (!this._isPlayingMedia) {
-                this.playNextMedia();
+        this._nextPlayMode = availableCounter === this._roomInfos.length ? PlayMode.Playlist : PlayMode.Calendar;
+        console.log(`[cal] next playmode is ${this._nextPlayMode}`);
+        if (this._nextPlayMode === PlayMode.Calendar) {
+            if (this._timeoutHwnd) {
+                console.log(`[cal] stop playing medias`);
+                this.clearMediaTimeout();
             }
+
+            this._currentPlayMode = this._nextPlayMode;
         }
         else {
-            this._isPlayingMedia = false;
+            if (this._timeoutHwnd) {
+                // do nothing, just wait for timeout
+                console.log(`[cal] do nothing?`);
+            }
+            else {
+                console.log(`[cal] start playing media`);
+                this.playNextMedia();
+                this._currentPlayMode = this._nextPlayMode;
+            }
         }
-        console.log('--- playmode: ', this._playMode);
     }
 
     logout(): void {
@@ -221,33 +233,42 @@ export class EsteeEntryComponent implements OnInit, OnDestroy {
             return;
         }
 
+        // when all media are finished, switch to Calendar mode
         if (this._nextPlaylistIndex >= this._config.playlist.contents.length) {
+            console.log(`[cal] media carousel is finished, switch to calendar for ${this._config.roomIdleDuration}s`);
             this._nextPlaylistIndex = 0;
-        }
+            this._currentPlayMode = PlayMode.Calendar;
+            this._timeoutHwnd = setTimeout(() => {
+                this._currentPlayMode = this._nextPlayMode;
+                if (this._currentPlayMode === PlayMode.Playlist) {
+                    console.log(`[cal] resume to play media`);
+                    this.playNextMedia();
+                }
+                else {
+                    this.clearMediaTimeout();
+                }
+            }, this._config.roomIdleDuration * 1000);
 
-        const mediaSetting: {
-            name: string,
-            duration?: number
-        } = this._config.playlist.contents[this._nextPlaylistIndex];
-
-        if (!mediaSetting.duration) {
-            mediaSetting.duration = this._config.playlist.duration;
-        }
-
-        const mediaRes: { isFault: boolean, b64Data?: string, mediaData?: Blob, mime?: string, errorType?: ErrorType, errorMsg?: string, errorMsgParams?: any[] } = await this.cacheSvc.loadMediaStream(this._config.playlist.folder + '/' + mediaSetting.name, 50);
-        console.log('--- media: ', mediaRes);
-        if (mediaRes.isFault) {
             return;
         }
 
-        try {
-            this._img64Data = mediaRes.b64Data;
-            this._isPlayingMedia = true;
-            this._nextPlaylistIndex++;
+        const mediaSetting: { name: string, duration?: number } = this._config.playlist.contents[this._nextPlaylistIndex];
+        mediaSetting.duration = mediaSetting.duration || this._config.playlist.duration;
+
+        const media: { isFault: boolean, b64Data?: string, mediaData?: Blob, mime?: string, errorType?: ErrorType, errorMsg?: string, errorMsgParams?: any[] } = await this.cacheSvc.loadMediaStream(this._config.playlist.folder + '/' + mediaSetting.name, 50);
+        if (media.isFault) {
+            return;
         }
-        catch (ex) {
-            console.error('--- playNextMedia ex: ', ex);
-            this._isPlayingMedia = false;
-        }   
+
+        this._img64Data = media.b64Data;
+        this._nextPlaylistIndex++;
+        this._timeoutHwnd = setTimeout(() => {
+            this.playNextMedia();
+        }, mediaSetting.duration * 1000);
+    }
+
+    private clearMediaTimeout(): void {
+        clearTimeout(this._timeoutHwnd);
+        this._timeoutHwnd = null;
     }
 }
