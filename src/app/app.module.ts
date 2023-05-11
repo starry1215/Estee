@@ -104,20 +104,6 @@ export function HttpLoaderFactory(http: HttpClient) {
       useClass: MsalInterceptor,
       multi: true
     },
-    /*
-    {
-      provide: MSAL_INSTANCE,
-      useFactory: MSALInstanceFactory
-    },
-    {
-      provide: MSAL_GUARD_CONFIG,
-      useFactory: MSALGuardConfigFactory
-    },
-    {
-      provide: MSAL_INTERCEPTOR_CONFIG,
-      useFactory: MSALInterceptorConfigFactory
-    },
-    */
     MsalService,
     MsalGuard,
     MsalBroadcastService

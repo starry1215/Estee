@@ -90,7 +90,15 @@ export class EsteeEntryComponent implements OnInit, OnDestroy {
             }
         });
 
-        // load config
+        this.loadConfig();
+    }
+
+    ngOnDestroy(): void {
+        this._destroying$.next();
+        this._destroying$.complete();
+    }
+
+    private loadConfig(): void {
         this.cacheSvc.getConfig(true).subscribe((res: { config: EsteeConfigInfo, errorMsg?: string }) => {
             console.log('[cal] config = ', res);
             if (!res.config || !res.config.playlist) {
@@ -108,11 +116,6 @@ export class EsteeEntryComponent implements OnInit, OnDestroy {
                 })
             });
         });
-    }
-
-    ngOnDestroy(): void {
-        this._destroying$.next();
-        this._destroying$.complete();
     }
 
     private updateNextCalendarQueryCounter(reason?: string): void {

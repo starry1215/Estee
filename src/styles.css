@@ -26,13 +26,6 @@ body {
     color: #7a828b;
 }
 
-.noise {
-    background-size: auto;
-    background-image: linear-gradient( 
-        180deg
-         , #000000dd 15%, #0c0c0ccc 60%, #2c2c2c 75%, #101010dd 90%), url(/assets/noise.svg);
-}
-
 .modal-dialog {
     color: #383838;
     min-width: 60vw;

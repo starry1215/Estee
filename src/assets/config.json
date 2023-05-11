@@ -1,4 +1,5 @@
 {
+    "roomIdleDuration": 120,
     "rooms": [
         {
             "email": "TaipeiExperience@TestSeanCompany.onmicrosoft.com",
@@ -13,12 +14,23 @@
             "displayName": "Tainan Experience"
         }
     ],
-    "playlist": [
-        {
-            "name": "adv-1.mp4"
-        },
-        {
-            "name": "adv-2.mp4"
-        }
-    ]
+    "playlist": {
+        "duration": 5,
+        "folder": "playlist",
+        "contents": [
+            {
+                "name": "1080_1920_1.jpg",
+                "duration": 10
+            },
+            {
+                "name": "1080_1920_2.jpg",
+                "duration": 10
+            },
+            {
+                "name": "1080_1920_3.jpg"
+            },
+            {
+                "name": "1080_1920_4.jpg"
+            }
+    ]}
 }

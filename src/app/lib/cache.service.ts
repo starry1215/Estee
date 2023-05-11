@@ -15,13 +15,9 @@ export class CacheService {
     private readonly CACHE_APP_CONFIG: string = 'IA-Config';
     private readonly CACHE_LOCAL_CONFIG: string = 'IA-Config-Local';
     private readonly CACHE_CONFIG_USE_LOCAL: string = 'IA-Config-UseLocal';
-    private readonly CACHE_LAST_LAUNCHTIME: string = 'IA-Config-LastLaunchTime';
     private readonly MB_TO_KB: number = Math.pow(2, 20);
 
     private _config: EsteeConfigInfo;
-    private _hasWebConfig: boolean = false;
-    private _bg64Data: string;
-    private _logo64Data: string;
     private _lastAccount: string;
     private _lastLaunchTime: number;
     private _forceUpdateMinute: number;
@@ -60,9 +56,6 @@ export class CacheService {
             this.removeCache(this.CACHE_APP_CONFIG);
             this.removeCache(this.CACHE_CONFIG_USE_LOCAL);
             this.removeCache(this.CACHE_LOCAL_CONFIG);
-
-            this._bg64Data = null;
-            this._logo64Data = null;
         }
     }
 
@@ -80,24 +73,16 @@ export class CacheService {
 
         if (forceRefresh) {
             this._loadingConfig = true;
-            return from(this.graphSvc.getConfig()).pipe(
-                map((res: { isFault: boolean, data?: EsteeConfigInfo, errorMessage?: string }) => {
-                    console.log('[cache] config from MS = ', res);
-
-                    if (!res.isFault) {
-                        this._hasWebConfig = true;
-                        this._config = new EsteeConfigInfo(res.data);
-                        this.updateCache(this.CACHE_APP_CONFIG, JSON.stringify(res.data));
-                    }
-                    else {
-                        this._hasWebConfig = false;
-                    }
+            return from(fetch('./assets/config.json').then(res => res.json())).pipe(
+                map((data: EsteeConfigInfo) => {
+                    this._config = new EsteeConfigInfo(data);
+                    this.updateCache(this.CACHE_APP_CONFIG, JSON.stringify(data));
 
                     this.initDateTimeFormatter();
 
                     this._loadingConfig = false;
 
-                    return { config: this._config, errorMsg: res.errorMessage };
+                    return { config: this._config };
                 })
             );
         }
@@ -143,33 +128,31 @@ export class CacheService {
 
 
     async loadMediaStream(relPath: string, fileSizeLimit: number, supportMimeTypes: string[] = []): Promise<{ isFault: boolean, mime?: string, b64Data?: string, mediaData?: Blob, errorType?: ErrorType, errorMsg?: string, errorMsgParams?: any[] }> {
-        if (!this._hasWebConfig) {
-            return { isFault: false };
-        }
-
         if (!relPath) {
             //do not assign resource relative path. use default.
             return { isFault: false };
         }
 
-        const resRet: { isFault: boolean, data?: { content: Blob, mimeType?: string }, errorMessage?: string } = await this.graphSvc.getStreamFile(relPath);
+        const resRet: { isFault: boolean, data?: Blob, errorMessage?: string } = await fetch(`./assets/${relPath}`).then(res => res.blob()).then(res => ({ isFault: false, data: res }));
+        /*
         if (resRet.isFault) {
             return { isFault: true, errorType: ErrorType.API, errorMsg: 'lang.clause.apiError', errorMsgParams: ['(' + relPath + ') ' + resRet.errorMessage] };
         }
-
-        if (resRet.data.content.size > (fileSizeLimit * this.MB_TO_KB)) {
+        */
+        if (resRet.data.size > (fileSizeLimit * this.MB_TO_KB)) {
             //decide the error msg on parent function.
             return { isFault: true, errorType: ErrorType.Size };
         }
 
-        const mime: string = resRet.data.mimeType.replace(/(image|video)\//, '');
+        const mime: string = resRet.data.type.replace(/(image|video)\//, '');
+        console.log('--- mime: ', mime);
         if (supportMimeTypes && supportMimeTypes.length > 0) {
             if (!supportMimeTypes.find(supportMime => supportMime === mime)) {
                 return { isFault: true, errorType: ErrorType.Format, errorMsg: 'lang.clause.imgFormatError', errorMsgParams: [relPath] };
             }
         }
         try {
-            let data: { isFault: boolean, mime?: string, b64Data?: string, mediaData?: Blob, errorType?: ErrorType, errorMsg?: string, errorMsgParams?: any[] } = { 
+            let data: { isFault: boolean, mime?: string, b64Data?: string, mediaData?: Blob, errorType?: ErrorType, errorMsg?: string, errorMsgParams?: any[] } = {
                 isFault: false,
                 mime: mime
             };
@@ -178,12 +161,12 @@ export class CacheService {
                 case 'jpg':
                 case 'png':
                     {
-                        data.b64Data = await lastValueFrom(Helper.blobToBase64(resRet.data.content));
+                        data.b64Data = await lastValueFrom(Helper.blobToBase64(resRet.data));
                     }
                     break;
                 case 'mp4':
                     {
-                        data.mediaData = resRet.data.content;
+                        data.mediaData = resRet.data;
                     }
                     break;
             }
